@@ -1,6 +1,6 @@
 export type Phase = 'menu' | 'playing' | 'paused' | 'over';
 
-export type SparkKind = 'spark' | 'rush' | 'rainbow' | 'prism';
+export type SparkKind = 'normal' | 'rush' | 'rainbow' | 'prism';
 
 export type Spark = {
   id: number;
@@ -18,6 +18,7 @@ export type Particle = {
   vx: number;
   vy: number;
   life: number;
+  max: number;
   color: string;
   size: number;
 };
@@ -31,23 +32,23 @@ export type Floater = {
   color: string;
 };
 
-export type GameEvent =
-  | { type: 'catch' }
-  | { type: 'miss' }
-  | { type: 'bloom' }
-  | { type: 'prism' }
-  | { type: 'fever' }
-  | { type: 'hue' }
-  | { type: 'over' };
+export type Fracture = {
+  angle: number;
+  seed: number;
+  born: number;
+  generation: number;
+};
 
 export type GameState = {
   phase: Phase;
   score: number;
   best: number;
+  bestAtStart: number;
   bestCombo: number;
   combo: number;
   maxCombo: number;
   cracks: number;
+  fractures: Fracture[];
   rotation: number;
   targetRotation: number;
   sparks: Spark[];
@@ -56,21 +57,37 @@ export type GameState = {
   spawnIn: number;
   colorCount: number;
   fever: number;
-  prism: number;
+  slow: number;
   chainColor: number | null;
   chainCount: number;
   chainTime: number;
   shake: number;
-  banner: string;
-  bannerTime: number;
   flash: number;
   flashColor: string;
-  pulse: number;
-  pulseColor: number;
+  banner: string;
+  bannerTime: number;
+  hue: number;
   catches: number;
   nextId: number;
-  isNewBest: boolean;
   haptics: boolean;
+  sound: boolean;
   elapsed: number;
-  glow: number;
+  shatterAt: number;
+  newBest: boolean;
 };
+
+export type SaveData = {
+  best: number;
+  bestCombo: number;
+  haptics: boolean;
+  sound: boolean;
+};
+
+export type GameEvent =
+  | { type: 'catch'; kind: SparkKind }
+  | { type: 'miss' }
+  | { type: 'bloom' }
+  | { type: 'fever' }
+  | { type: 'hue' }
+  | { type: 'prism' }
+  | { type: 'over' };

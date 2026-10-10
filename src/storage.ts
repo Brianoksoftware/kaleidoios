@@ -1,40 +1,36 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const KEY = 'kaleido.profile.v1';
+import type { SaveData } from './game/types';
 
-export type Profile = {
-  best: number;
-  bestCombo: number;
-  haptics: boolean;
-};
+const KEY = 'kaleido-save-v1';
 
-export const defaultProfile: Profile = {
+export const DEFAULT_SAVE: SaveData = {
   best: 0,
   bestCombo: 0,
   haptics: true,
+  sound: true,
 };
 
-export async function loadProfile(): Promise<Profile> {
+export async function loadSave(): Promise<SaveData> {
   try {
     const raw = await AsyncStorage.getItem(KEY);
-    if (!raw) return defaultProfile;
-    const parsed: unknown = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return defaultProfile;
-    const record = parsed as Partial<Profile>;
+    if (!raw) return DEFAULT_SAVE;
+    const parsed = JSON.parse(raw) as Partial<SaveData>;
     return {
-      best: typeof record.best === 'number' ? record.best : 0,
-      bestCombo: typeof record.bestCombo === 'number' ? record.bestCombo : 0,
-      haptics: typeof record.haptics === 'boolean' ? record.haptics : true,
+      best: typeof parsed.best === 'number' ? parsed.best : 0,
+      bestCombo: typeof parsed.bestCombo === 'number' ? parsed.bestCombo : 0,
+      haptics: parsed.haptics !== false,
+      sound: parsed.sound !== false,
     };
   } catch {
-    return defaultProfile;
+    return DEFAULT_SAVE;
   }
 }
 
-export async function saveProfile(profile: Profile): Promise<void> {
+export async function writeSave(save: SaveData) {
   try {
-    await AsyncStorage.setItem(KEY, JSON.stringify(profile));
+    await AsyncStorage.setItem(KEY, JSON.stringify(save));
   } catch {
-    // A failed local save should not interrupt the run.
+    // High scores stay in memory if storage is unavailable.
   }
 }

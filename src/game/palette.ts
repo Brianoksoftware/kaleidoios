@@ -1,3 +1,6 @@
+export const INK = '#140824';
+export const NIGHT = '#070514';
+
 export type Hue = {
   name: string;
   hex: string;
@@ -12,23 +15,23 @@ export const HUES: Hue[] = [
   { name: 'Pink', hex: '#F15BB5' },
 ];
 
+export const RAINBOW = '#FFE566';
+export const PRISM = '#F4F1FF';
+
 export function hue(index: number): Hue {
   const safe = ((index % HUES.length) + HUES.length) % HUES.length;
   return HUES[safe] ?? HUES[0];
 }
 
-export function rankName(catches: number): string {
-  if (catches >= 110) return 'Mythic';
-  if (catches >= 70) return 'Supernova';
-  if (catches >= 40) return 'Nova';
-  if (catches >= 20) return 'Prism';
-  if (catches >= 8) return 'Gleam';
-  return 'Spark';
+export function rankName(catches: number) {
+  return waveName(catches);
 }
 
-export function colorCountFor(catches: number): number {
-  if (catches >= 42) return 6;
-  if (catches >= 24) return 5;
-  if (catches >= 10) return 4;
-  return 3;
+export function waveName(catches: number) {
+  if (catches >= 110) return 'Mythic';
+  if (catches >= 70) return 'Supernova';
+  if (catches >= 46) return 'Nova';
+  if (catches >= 24) return 'Prism';
+  if (catches >= 10) return 'Gleam';
+  return 'Spark';
 }
