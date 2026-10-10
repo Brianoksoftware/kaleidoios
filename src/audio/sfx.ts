@@ -28,7 +28,7 @@ const sources = {
   fever: require('../../assets/sfx/fever.wav'),
   hue: require('../../assets/sfx/hue.wav'),
   shatter: require('../../assets/sfx/shatter.wav'),
-  music: require('../../assets/sfx/music.wav'),
+  music: require('../../assets/sfx/background_moodmode.mp3'),
 } as const;
 
 const poolSize: Record<SfxName, number> = {
@@ -105,7 +105,7 @@ export async function prepareAudio() {
     try {
       music = createAudioPlayer(await localSource(sources.music), playerOptions);
       music.loop = true;
-      music.volume = 0.34;
+      music.volume = 0.62;
     } catch (error) {
       console.warn('Kaleido audio: could not load music', error);
       music = null;

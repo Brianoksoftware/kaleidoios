@@ -90,7 +90,7 @@ export function startRun(state: GameState) {
   state.phase = 'playing';
   state.bestAtStart = best;
   state.banner = 'MATCH THE HUE';
-  state.bannerTime = 2.2;
+  state.bannerTime = 1.25;
   state.spawnIn = 0.45;
 }
 

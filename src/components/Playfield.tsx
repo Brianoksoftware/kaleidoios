@@ -5,6 +5,7 @@ import Svg, { Circle, G, Path } from 'react-native-svg';
 import { flyingShards, fracturePaths, fractureProgress, shatterPaths, shockRadius, type FlyingShard } from '../game/fracture';
 import { petalAt, radii, sectorPath, TAU } from '../game/geometry';
 import { HUES, PRISM, RAINBOW } from '../game/palette';
+import { fitFont } from './ui';
 import type { GameState, Phase, SparkKind } from '../game/types';
 
 const SPARK_SLOTS = 7;
@@ -71,7 +72,7 @@ function sparkPaint(kind: SparkKind, color: number) {
 
 export const PlayStage = memo(
   forwardRef<StageHandle, Props>(function PlayStage(
-    { stateRef, size, colorCount, cracks, phase, hue, fever, combo, chainCount, banner, bannerOn },
+    { stateRef, size, colorCount, cracks, phase, hue, fever, combo, chainCount },
     ref,
   ) {
     const boardRef = useRef<View>(null);
@@ -276,9 +277,9 @@ export const PlayStage = memo(
           const opacity = Math.max(0, floater.life);
           commitView(node, {
             position: 'absolute',
-            left: floater.x - 40,
+            left: floater.x - 56,
             top: floater.y - 12,
-            width: 80,
+            width: 112,
             opacity,
           });
         }
@@ -304,6 +305,14 @@ export const PlayStage = memo(
 
     const floaters = state?.floaters.slice(-FLOATER_SLOTS) ?? [];
     const pieces = shardPieces.current?.pieces ?? [];
+    const hole = ringInner * 1.62;
+    const comboLabel = `${combo}×`;
+    const subLabel = fever ? 'FEVER' : chainCount > 0 ? `${chainCount}/3` : '';
+    const subTracking = subLabel === 'FEVER' ? 1.1 : 0.3;
+    const comboRoom = subLabel ? hole * 0.56 : hole * 0.78;
+    const subRoom = hole * 0.3;
+    const comboSize = fitFont(comboLabel, hole * 0.9, Math.min(32, comboRoom), 11);
+    const subSize = fitFont(subLabel, hole * 0.9, Math.min(13, subRoom), 8, subTracking);
 
     return (
       <View ref={boardRef} collapsable={false} style={{ width: size, height: size }}>
@@ -443,13 +452,28 @@ export const PlayStage = memo(
             />
           ))}
         </Svg>
-        <View style={styles.core} pointerEvents="none">
-          <Text style={styles.combo}>{combo > 0 ? `${combo}×` : 'GO'}</Text>
-          <Text style={styles.coreSub}>{fever ? 'FEVER' : chainCount > 0 ? `${chainCount}/3` : 'HUE'}</Text>
-        </View>
-        {bannerOn && (
-          <View style={styles.bannerWrap} pointerEvents="none">
-            <Text style={styles.banner}>{banner}</Text>
+        {(combo > 0 || fever || chainCount > 0) && (
+          <View style={[styles.core, { width: hole, height: hole, left: (size - hole) / 2, top: (size - hole) / 2 }]}>
+            {combo > 0 ? (
+              <Text
+                style={[styles.combo, { fontSize: comboSize, lineHeight: comboSize + 1 }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.5}
+              >
+                {comboLabel}
+              </Text>
+            ) : null}
+            {subLabel ? (
+              <Text
+                style={[styles.coreSub, { fontSize: subSize, lineHeight: subSize + 2, letterSpacing: subTracking }]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.6}
+              >
+                {subLabel}
+              </Text>
+            ) : null}
           </View>
         )}
         {Array.from({ length: FLOATER_SLOTS }, (_, index) => {
@@ -460,7 +484,6 @@ export const PlayStage = memo(
               ref={(node) => {
                 floaterRefs.current[index] = node;
               }}
-              pointerEvents="none"
               style={[
                 styles.floater,
                 floater
@@ -468,14 +491,26 @@ export const PlayStage = memo(
                   : styles.floaterHidden,
               ]}
             >
-              <Text style={[styles.floaterText, { color: floater?.color ?? '#FFFFFF' }]}>{floater?.text ?? ''}</Text>
+              <Text
+                style={[
+                  styles.floaterText,
+                  {
+                    color: floater?.color ?? '#FFFFFF',
+                    fontSize: fitFont(floater?.text ?? '', 108, 16, 9),
+                  },
+                ]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.55}
+              >
+                {floater?.text ?? ''}
+              </Text>
             </View>
           );
         })}
         <View
           ref={flashRef}
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, { opacity: flashOpacity.current, backgroundColor: state?.flashColor ?? 'transparent' }]}
+          style={[styles.flash, { opacity: flashOpacity.current, backgroundColor: state?.flashColor ?? 'transparent' }]}
         />
       </View>
     );
@@ -485,47 +520,37 @@ export const PlayStage = memo(
 const styles = StyleSheet.create({
   core: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    pointerEvents: 'none',
   },
   combo: {
     color: '#FFFFFF',
-    fontSize: 28,
     fontWeight: '900',
-    letterSpacing: 0.5,
+    letterSpacing: 0,
+    textAlign: 'center',
+    width: '100%',
+    includeFontPadding: false,
+    textShadowColor: 'rgba(0,0,0,0.45)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 6,
   },
   coreSub: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 11,
+    color: 'rgba(255,255,255,0.88)',
     fontWeight: '800',
-    letterSpacing: 1.4,
-  },
-  bannerWrap: {
-    position: 'absolute',
-    top: 8,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  banner: {
-    color: '#FFFFFF',
-    backgroundColor: 'rgba(8,4,20,0.55)',
-    overflow: 'hidden',
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 1.6,
+    textAlign: 'center',
+    width: '100%',
+    includeFontPadding: false,
   },
   floater: {
     position: 'absolute',
-    width: 80,
+    width: 112,
     alignItems: 'center',
+    pointerEvents: 'none',
+  },
+  flash: {
+    ...StyleSheet.absoluteFill,
+    pointerEvents: 'none',
   },
   floaterHidden: {
     opacity: 0,
@@ -534,7 +559,7 @@ const styles = StyleSheet.create({
   },
   floaterText: {
     fontWeight: '900',
-    fontSize: 16,
     textAlign: 'center',
+    width: '100%',
   },
 });
