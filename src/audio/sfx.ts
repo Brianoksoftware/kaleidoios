@@ -105,7 +105,7 @@ export async function prepareAudio() {
     try {
       music = createAudioPlayer(await localSource(sources.music), playerOptions);
       music.loop = true;
-      music.volume = 0.72;
+      music.volume = 0.34;
     } catch (error) {
       console.warn('Kaleido audio: could not load music', error);
       music = null;
@@ -127,7 +127,7 @@ export function playSfx(name: SfxName, rate = 1) {
   try {
     if (rate !== 1) {
       player.shouldCorrectPitch = false;
-      player.playbackRate = rate;
+      player.setPlaybackRate(rate);
     }
     void player.seekTo(0).finally(() => start(player));
     setTimeout(() => start(player), 150);

@@ -297,27 +297,28 @@ function shatter() {
 }
 
 function music() {
-  const seconds = 8;
+  const seconds = 12;
   const out = silence(seconds);
   const addPad = (freq, amp) => {
     const cycles = Math.round((freq * out.length) / RATE);
     const tuned = (cycles * RATE) / out.length;
     for (let i = 0; i < out.length; i++) {
       const t = i / RATE;
-      out[i] += Math.sin(2 * Math.PI * tuned * t) * amp;
+      const breath = 0.82 + 0.18 * Math.sin((2 * Math.PI * t) / seconds);
+      out[i] += Math.sin(2 * Math.PI * tuned * t) * amp * breath;
     }
   };
-  addPad(130.81, 0.09);
-  addPad(196.0, 0.05);
-  addPad(261.63, 0.035);
-  addPad(329.63, 0.02);
+  addPad(523.25, 0.03);
+  addPad(659.25, 0.02);
+  addPad(783.99, 0.014);
 
-  const scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
-  const pattern = [0, 2, 4, 2, 3, 1, 4, 2, 5, 4, 2, 3, 1, 2, 0, 4];
+  const scale = [523.25, 587.33, 659.25, 783.99, 880];
+  const pattern = [0, 2, 4, 2, 1, 3, 2, 0];
+  const step = seconds / pattern.length;
   pattern.forEach((degree, index) => {
-    mix(out, bell(scale[degree], 0.46, 0.11), Math.floor(index * 0.5 * RATE));
+    mix(out, bell(scale[degree], 0.62, 0.055), Math.floor((index * step + 0.18) * RATE));
   });
-  return fadeEdges(normalize(out, 0.26), 0.03);
+  return normalize(out, 0.18);
 }
 
 const files = {
