@@ -10,13 +10,13 @@ function colorCountFor(catches: number) {
 }
 
 function spawnInterval(catches: number) {
-  if (catches < 4) return 2.35;
-  return Math.max(0.42, 1.28 - catches * 0.016);
+  if (catches < 3) return 0.92;
+  return Math.max(0.36, 0.92 - catches * 0.02);
 }
 
 function sparkSpeed(size: number, catches: number, kind: SparkKind) {
-  const base = size * (0.068 + Math.min(0.2, catches * 0.0036));
-  if (kind === 'rush') return base * 1.58;
+  const base = size * (0.2 + Math.min(0.24, catches * 0.005));
+  if (kind === 'rush') return base * 1.52;
   if (kind === 'prism') return base * 0.82;
   return base;
 }
@@ -77,6 +77,7 @@ export function createState(save: SaveData): GameState {
     elapsed: 0,
     shatterAt: 0,
     newBest: false,
+    revived: false,
   };
 }
 
@@ -90,8 +91,21 @@ export function startRun(state: GameState) {
   state.phase = 'playing';
   state.bestAtStart = best;
   state.banner = 'MATCH THE HUE';
-  state.bannerTime = 1.25;
-  state.spawnIn = 0.45;
+  state.bannerTime = 1.1;
+  state.spawnIn = 0.22;
+}
+
+export function reviveRun(state: GameState) {
+  state.phase = 'playing';
+  state.revived = true;
+  state.cracks = 2; // Restore to 2 cracks (1 life remaining)
+  state.sparks = []; // Clear incoming sparks so player has time to prepare
+  state.spawnIn = 0.35;
+  state.slow = 0.55; // Brief recovery buffer without grinding to a halt
+  state.banner = 'REVIVED!';
+  state.bannerTime = 1.3;
+  state.flash = 0.5;
+  state.flashColor = '#00F5D4';
 }
 
 export function spin(state: GameState, direction: -1 | 1) {
@@ -133,8 +147,8 @@ function burst(state: GameState, x: number, y: number, color: string, count: num
     });
     state.nextId += 1;
   }
-  if (state.particles.length > 48) {
-    state.particles.splice(0, state.particles.length - 48);
+  if (state.particles.length > 16) {
+    state.particles.splice(0, state.particles.length - 16);
   }
 }
 
@@ -182,7 +196,7 @@ function spawnSpark(state: GameState, size: number, opening: boolean) {
     angle: pickAngle(state, color, kind),
     radius: radii(size).spawn,
     color,
-    speed: sparkSpeed(size, state.catches, kind) * (opening ? 0.7 : 1),
+    speed: sparkSpeed(size, state.catches, kind),
     kind,
   };
   state.nextId += 1;
@@ -292,8 +306,8 @@ function shards(state: GameState, x: number, y: number, count: number, force: nu
     });
     state.nextId += 1;
   }
-  if (state.particles.length > 48) {
-    state.particles.splice(0, state.particles.length - 48);
+  if (state.particles.length > 16) {
+    state.particles.splice(0, state.particles.length - 16);
   }
 }
 
@@ -340,7 +354,7 @@ export function step(state: GameState, dt: number, size: number): GameEvent[] {
   if (state.phase !== 'playing' || size < 80) return NO_EVENTS;
 
   const turn = state.targetRotation - state.rotation;
-  state.rotation += turn * Math.min(1, delta * 24);
+  state.rotation += turn * Math.min(1, delta * 36);
   if (Math.abs(state.targetRotation - state.rotation) < 0.001) {
     state.rotation = state.targetRotation;
   }
@@ -387,9 +401,9 @@ export function step(state: GameState, dt: number, size: number): GameEvent[] {
 
   if (state.phase === 'playing') {
     state.spawnIn -= delta;
-    if (state.spawnIn <= 0 && state.sparks.length < (state.catches < 4 ? 1 : 7)) {
+    if (state.spawnIn <= 0 && state.sparks.length < (state.catches < 2 ? 2 : 7)) {
       spawnSpark(state, size, state.catches === 0 && state.sparks.length === 0);
-      state.spawnIn = spawnInterval(state.catches) * (0.78 + Math.random() * 0.4);
+      state.spawnIn = spawnInterval(state.catches) * (0.8 + Math.random() * 0.35);
     }
   }
 

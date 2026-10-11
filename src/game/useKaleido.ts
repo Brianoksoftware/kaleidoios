@@ -5,7 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { playSfx, prepareAudio, setMusic } from '../audio/sfx';
 import type { StageHandle } from '../components/Playfield';
 import { DEFAULT_SAVE, loadSave, writeSave } from '../storage';
-import { createState, decayFx, spin, startRun, step } from './engine';
+import { createState, decayFx, reviveRun, spin, startRun, step } from './engine';
 import type { GameEvent, GameState, Phase, SaveData } from './types';
 
 function buzz(run: () => Promise<unknown>) {
@@ -43,6 +43,7 @@ export type Hud = {
   bestCombo: number;
   haptics: boolean;
   sound: boolean;
+  revived: boolean;
   revision: number;
 };
 
@@ -65,6 +66,7 @@ function toHud(state: GameState, revision: number): Hud {
     bestCombo: state.bestCombo,
     haptics: state.haptics,
     sound: state.sound,
+    revived: state.revived,
     revision,
   };
 }
@@ -137,7 +139,8 @@ export function useKaleido(stageRef: RefObject<StageHandle | null>) {
         prev.maxCombo === live.maxCombo &&
         prev.bestCombo === live.bestCombo &&
         prev.haptics === live.haptics &&
-        prev.sound === live.sound
+        prev.sound === live.sound &&
+        prev.revived === live.revived
       ) {
         return;
       }
@@ -256,6 +259,14 @@ export function useKaleido(stageRef: RefObject<StageHandle | null>) {
     pump();
   }, [publish, pump]);
 
+  const revive = useCallback(() => {
+    if (stateRef.current.phase !== 'over') return;
+    reviveRun(stateRef.current);
+    syncMusic(stateRef.current);
+    publish(stateRef.current);
+    pump();
+  }, [publish, pump]);
+
   const menu = useCallback(() => {
     const state = stateRef.current;
     state.bestCombo = Math.max(state.bestCombo, state.maxCombo);
@@ -292,6 +303,7 @@ export function useKaleido(stageRef: RefObject<StageHandle | null>) {
     stateRef,
     booted,
     play,
+    revive,
     turn,
     pause,
     resume,

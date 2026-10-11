@@ -42,3 +42,19 @@ export function radii(size: number) {
     ringInner: size * 0.15,
   };
 }
+
+/** Pointed petal from (cx, cy) outward along `angle`, `width` is the half-bulge. */
+export function leafPath(cx: number, cy: number, angle: number, start: number, length: number, width: number) {
+  const dx = Math.cos(angle);
+  const dy = Math.sin(angle);
+  const px = -dy;
+  const py = dx;
+  const bx = cx + dx * start;
+  const by = cy + dy * start;
+  const tx = cx + dx * (start + length);
+  const ty = cy + dy * (start + length);
+  const mx = cx + dx * (start + length / 2);
+  const my = cy + dy * (start + length / 2);
+  const f = (n: number) => n.toFixed(2);
+  return `M ${f(bx)} ${f(by)} Q ${f(mx + px * width)} ${f(my + py * width)} ${f(tx)} ${f(ty)} Q ${f(mx - px * width)} ${f(my - py * width)} ${f(bx)} ${f(by)} Z`;
+}

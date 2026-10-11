@@ -9,6 +9,7 @@ export const DEFAULT_SAVE: SaveData = {
   bestCombo: 0,
   haptics: true,
   sound: true,
+  adsRemoved: false,
 };
 
 export async function loadSave(): Promise<SaveData> {
@@ -21,6 +22,7 @@ export async function loadSave(): Promise<SaveData> {
       bestCombo: typeof parsed.bestCombo === 'number' ? parsed.bestCombo : 0,
       haptics: parsed.haptics !== false,
       sound: parsed.sound !== false,
+      adsRemoved: Boolean(parsed.adsRemoved),
     };
   } catch {
     return DEFAULT_SAVE;

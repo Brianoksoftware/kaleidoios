@@ -74,6 +74,8 @@ export type GameState = {
   elapsed: number;
   shatterAt: number;
   newBest: boolean;
+  /** True after the one rewarded continue in this run has been used. */
+  revived: boolean;
 };
 
 export type SaveData = {
@@ -81,6 +83,7 @@ export type SaveData = {
   bestCombo: number;
   haptics: boolean;
   sound: boolean;
+  adsRemoved?: boolean;
 };
 
 export type GameEvent =

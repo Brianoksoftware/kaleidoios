@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Kaleido",
-    "slug": "kaleido",
+    "name": "Prism Bloom: Color Match Rush",
+    "slug": "prism-bloom",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,10 +9,10 @@
     "backgroundColor": "#140824",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kaleidobloom.game"
+      "bundleIdentifier": "com.prismbloom.game"
     },
     "android": {
-      "package": "com.kaleidobloom.game",
+      "package": "com.prismbloom.game",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#140824",
@@ -20,13 +20,18 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "eas": {}
+      "eas": {
+        "projectId": "de67afbc-8641-4d99-84a7-e8c65ce90fdc"
+      }
     },
     "plugins": [
       [
@@ -36,7 +41,18 @@
           "enableBackgroundPlayback": false,
           "enableBackgroundRecording": false
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
       ]
     ]
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+    "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
   }
 }
