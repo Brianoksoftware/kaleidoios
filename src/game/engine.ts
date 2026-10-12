@@ -9,13 +9,15 @@ function colorCountFor(catches: number) {
   return 6;
 }
 
+const MAX_SPARKS = 7;
+
 function spawnInterval(catches: number) {
-  if (catches < 3) return 0.92;
-  return Math.max(0.36, 0.92 - catches * 0.02);
+  if (catches < 3) return 0.56;
+  return Math.max(0.28, 0.56 - catches * 0.012);
 }
 
 function sparkSpeed(size: number, catches: number, kind: SparkKind) {
-  const base = size * (0.2 + Math.min(0.24, catches * 0.005));
+  const base = size * (0.23 + Math.min(0.25, catches * 0.006));
   if (kind === 'rush') return base * 1.52;
   if (kind === 'prism') return base * 0.82;
   return base;
@@ -201,6 +203,31 @@ function spawnSpark(state: GameState, size: number, opening: boolean) {
   };
   state.nextId += 1;
   state.sparks.push(spark);
+}
+
+/** A tight same-hue burst: all members sit inside one petal band a single spin away. */
+function spawnVolley(state: GameState, size: number, count: number) {
+  const sector = TAU / state.colorCount;
+  const dir: -1 | 1 = Math.random() < 0.5 ? -1 : 1;
+  const color = Math.floor(Math.random() * state.colorCount);
+  // One sector flip in `dir` lands this center on the color's petal, so the
+  // whole volley is catchable together — dense but always fair.
+  const bandCenter = color * sector + state.targetRotation + dir * sector;
+  const span = sector * (count === 3 ? 0.66 : 0.44);
+  const base = sparkSpeed(size, state.catches, 'normal');
+  for (let i = 0; i < count; i += 1) {
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    const spark: Spark = {
+      id: state.nextId,
+      angle: wrapAngle(bandCenter + (t - 0.5) * span),
+      radius: radii(size).spawn + (i - (count - 1) / 2) * size * 0.012,
+      color,
+      speed: base * (0.98 + i * 0.09 + Math.random() * 0.05),
+      kind: 'normal',
+    };
+    state.nextId += 1;
+    state.sparks.push(spark);
+  }
 }
 
 function bloom(state: GameState, x: number, y: number): GameEvent {
@@ -401,9 +428,15 @@ export function step(state: GameState, dt: number, size: number): GameEvent[] {
 
   if (state.phase === 'playing') {
     state.spawnIn -= delta;
-    if (state.spawnIn <= 0 && state.sparks.length < (state.catches < 2 ? 2 : 7)) {
-      spawnSpark(state, size, state.catches === 0 && state.sparks.length === 0);
-      state.spawnIn = spawnInterval(state.catches) * (0.8 + Math.random() * 0.35);
+    if (state.spawnIn <= 0 && state.sparks.length < (state.catches < 2 ? 2 : MAX_SPARKS)) {
+      const opening = state.catches === 0 && state.sparks.length === 0;
+      const room = MAX_SPARKS - state.sparks.length;
+      if (!opening && state.catches >= 3 && room >= 2 && Math.random() < 0.45) {
+        spawnVolley(state, size, state.catches >= 14 && room >= 3 && Math.random() < 0.35 ? 3 : 2);
+      } else {
+        spawnSpark(state, size, opening);
+      }
+      state.spawnIn = spawnInterval(state.catches) * (0.85 + Math.random() * 0.3);
     }
   }
 
