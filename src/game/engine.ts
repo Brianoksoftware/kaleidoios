@@ -12,14 +12,14 @@ function colorCountFor(catches: number) {
 const MAX_SPARKS = 7;
 
 function spawnInterval(catches: number) {
-  // Warm-up: singles with room to breathe, then a steady ramp to full pressure.
-  if (catches < 6) return 0.95;
-  return Math.max(0.34, 0.95 - (catches - 6) * 0.012);
+  // Extended warm-up: singles with room to breathe, then a steady ramp to full pressure.
+  if (catches < 10) return 1.05;
+  return Math.max(0.36, 1.05 - (catches - 10) * 0.013);
 }
 
 function sparkSpeed(size: number, catches: number, kind: SparkKind) {
-  const base = size * (0.17 + Math.min(0.23, catches * 0.0026));
-  if (kind === 'rush') return base * 1.45;
+  const base = size * (0.15 + Math.min(0.24, catches * 0.0024));
+  if (kind === 'rush') return base * 1.4;
   if (kind === 'prism') return base * 0.8;
   return base;
 }
@@ -29,7 +29,7 @@ function rollKind(catches: number, opening: boolean): SparkKind {
   const roll = Math.random();
   if (catches > 8 && roll < 0.055) return 'prism';
   if (catches > 5 && roll < 0.13) return 'rainbow';
-  if (catches > 10 && roll < 0.3) return 'rush';
+  if (catches > 14 && roll < 0.3) return 'rush';
   return 'normal';
 }
 
@@ -95,7 +95,7 @@ export function startRun(state: GameState) {
   state.bestAtStart = best;
   state.banner = 'MATCH THE HUE';
   state.bannerTime = 1.1;
-  state.spawnIn = 0.6;
+  state.spawnIn = 0.8;
 }
 
 export function reviveRun(state: GameState) {
@@ -103,7 +103,7 @@ export function reviveRun(state: GameState) {
   state.revived = true;
   state.cracks = 2; // Restore to 2 cracks (1 life remaining)
   state.sparks = []; // Clear incoming sparks so player has time to prepare
-  state.spawnIn = 0.55;
+  state.spawnIn = 0.6;
   state.slow = 0.55; // Brief recovery buffer without grinding to a halt
   state.banner = 'REVIVED!';
   state.bannerTime = 1.3;
@@ -429,13 +429,13 @@ export function step(state: GameState, dt: number, size: number): GameEvent[] {
 
   if (state.phase === 'playing') {
     state.spawnIn -= delta;
-    if (state.spawnIn <= 0 && state.sparks.length < (state.catches < 6 ? 2 : MAX_SPARKS)) {
+    if (state.spawnIn <= 0 && state.sparks.length < (state.catches < 10 ? 2 : MAX_SPARKS)) {
       const opening = state.catches === 0 && state.sparks.length === 0;
       const room = MAX_SPARKS - state.sparks.length;
-      // No volleys during the warm-up; they arrive at 10 catches and grow from there.
-      const volleyChance = state.catches >= 10 ? Math.min(0.5, 0.25 + state.catches * 0.005) : 0;
+      // No volleys during the warm-up; they arrive at 12 catches and grow from there.
+      const volleyChance = state.catches >= 12 ? Math.min(0.45, 0.2 + state.catches * 0.005) : 0;
       if (room >= 2 && Math.random() < volleyChance) {
-        spawnVolley(state, size, state.catches >= 30 && room >= 3 && Math.random() < 0.3 ? 3 : 2);
+        spawnVolley(state, size, state.catches >= 40 && room >= 3 && Math.random() < 0.25 ? 3 : 2);
       } else {
         spawnSpark(state, size, opening);
       }
