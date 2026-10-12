@@ -50,7 +50,7 @@ for (let run = 0; run < 6; run += 1) {
       let diff = spark.angle - spark.color * sector - live.targetRotation;
       while (diff > Math.PI) diff -= TAU;
       while (diff < -Math.PI) diff += TAU;
-      if (Math.abs(diff) > sector * 0.7) spin(live, diff > 0 ? 1 : -1);
+      if (Math.abs(diff) > sector * 0.5) spin(live, diff > 0 ? 1 : -1);
     }
     step(live, 0.016, 360);
     if (!Number.isFinite(live.score) || live.sparks.length > 7) {
