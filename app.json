@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.prismbloom.game",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#140824",
         "foregroundImage": "./assets/android-icon-foreground.png",
