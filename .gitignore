@@ -26,6 +26,9 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
+# EAS build artifacts
+build/
+
 # macOS
 .DS_Store
 *.pem
