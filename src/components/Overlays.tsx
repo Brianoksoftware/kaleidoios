@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, G, Path, RadialGradient, Circle, Stop } from 'react-native-svg';
 
 import { TAU } from '../game/geometry';
-import { CrownIcon, HomeIcon, PauseIcon, PlayIcon, ReplayIcon, SparkleIcon } from './icons';
+import { CrownIcon, HomeIcon, PauseIcon, PlayIcon, ReplayIcon } from './icons';
 import { CountUp, display, fitFont, font, formatScore, Glass, GhostButton, GlowButton, Rise, Type } from './ui';
 
 type Insets = { top: number; bottom: number };
@@ -200,7 +200,6 @@ export function GameOverOverlay({
               label="REVIVE (AD)"
               onPress={onRevive}
               colors={['#00F5D4', '#00BBF9', '#9B5DE5']}
-              icon={<SparkleIcon size={20} color="#FFFFFF" />}
             />
           )}
           <GlowButton label="AGAIN" onPress={onAgain} icon={<ReplayIcon size={20} />} />
