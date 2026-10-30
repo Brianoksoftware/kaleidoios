@@ -31,10 +31,10 @@ kaleidoscope,arcade,tap,chroma,circle,hue,neon,reaction,brain,casual,offline,spi
   - **Subcategory 2**: `Casual` (or `Action`)
 
 ### URLs for App Store Connect (GitHub Pages)
-- **Privacy Policy URL**: `https://brianoksoftware.github.io/kaleido/`
-- **Support URL**: `https://brianoksoftware.github.io/kaleido/`
-- **Marketing URL**: `https://brianoksoftware.github.io/kaleido/`
-- **AdMob `app-ads.txt` URL**: `https://brianoksoftware.github.io/kaleido/app-ads.txt` *(Note: For AdMob `app-ads.txt` root-domain verification on GitHub Pages, you can also put `app-ads.txt` in a repo named `Brianoksoftware.github.io` so it resolves at `https://brianoksoftware.github.io/app-ads.txt`)*
+- **Privacy Policy URL**: `https://brianoksoftware.github.io/kaleidoios/`
+- **Support URL**: `https://brianoksoftware.github.io/kaleidoios/`
+- **Marketing URL**: `https://brianoksoftware.github.io/kaleidoios/`
+- **AdMob `app-ads.txt` URL**: `https://brianoksoftware.github.io/kaleidoios/app-ads.txt` *(Note: For AdMob `app-ads.txt` root-domain verification on GitHub Pages, you can also put `app-ads.txt` in a repo named `Brianoksoftware.github.io` so it resolves at `https://brianoksoftware.github.io/app-ads.txt`)*
 
 ### Promotional Text (166 / 170 characters)
 *(Can be updated at any time in App Store Connect without submitting a new app build)*
