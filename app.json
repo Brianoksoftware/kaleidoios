@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
-      "bundleIdentifier": "com.prismbloom.game",
+      "bundleIdentifier": "com.prismring.game",
       "buildNumber": "1",
       "infoPlist": {
         "CFBundleDisplayName": "Prism Ring",
@@ -48,7 +48,7 @@
       }
     },
     "android": {
-      "package": "com.prismbloom.game",
+      "package": "com.prismring.game",
       "versionCode": 6,
       "adaptiveIcon": {
         "backgroundColor": "#140824",

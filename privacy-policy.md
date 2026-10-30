@@ -1,7 +1,7 @@
 # Privacy Policy for Prism Ring
 
 **App:** Prism Ring: Color Wheel Game  
-**iOS Bundle ID:** `com.prismbloom.game`  
+**iOS Bundle ID:** `com.prismring.game`  
 **Platforms:** iOS & iPadOS (iPhone & iPad)  
 **Developer:** brianoksoftware  
 **Effective date:** 30 October 2026
