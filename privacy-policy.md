@@ -1,12 +1,12 @@
 # Privacy Policy for Prism Ring
 
 **App:** Prism Ring: Color Wheel Game  
-**iOS Bundle ID / Android Package:** `com.prismbloom.game`  
-**Platforms:** iOS (iPhone & iPad) and Android  
+**iOS Bundle ID:** `com.prismbloom.game`  
+**Platforms:** iOS & iPadOS (iPhone & iPad)  
 **Developer:** brianoksoftware  
 **Effective date:** 30 October 2026
 
-This policy explains what Prism Ring does with information when you play the app on iOS (iPhone or iPad) or Android. The developer does not run an account system and does not operate a backend server for this game.
+This policy explains what Prism Ring does with information when you play the app on iOS or iPadOS (iPhone or iPad). The developer does not run an account system and does not operate a backend server for this game.
 
 ## Information stored on your device
 
@@ -31,7 +31,7 @@ To deliver, measure, cap frequency, and protect against fraud, Google AdMob may 
 - Ad performance and interaction events (whether an ad was loaded, shown, or tapped) and Apple `SKAdNetwork` attribution signals on iOS
 - Device advertising or vendor identifiers where permitted by your operating system settings
 
-That information is processed by Google under Google's Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy). You can manage privacy and advertising controls at any time in **iOS Settings > Privacy & Security** or **Android Settings > Google > Ads**.
+That information is processed by Google under Google's Privacy Policy: [https://policies.google.com/privacy](https://policies.google.com/privacy). You can manage privacy and advertising controls at any time in **iOS Settings > Privacy & Security**.
 
 ## Permissions
 
