@@ -10,6 +10,8 @@ import MobileAds, {
   TestIds,
 } from 'react-native-google-mobile-ads';
 
+import { setMusic } from '../audio/sfx';
+
 /**
  * Production AdMob Ad Unit IDs (use `/` format: ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY).
  * Replace these strings with your live Ad Unit IDs from the Google AdMob console.
@@ -207,13 +209,37 @@ export function shouldShowInterstitial(): boolean {
   return interstitialLoaded;
 }
 
-/** Shows Interstitial with safe fallback */
+/** Shows Interstitial and waits until the user closes (X) the ad before resolving */
 export async function showInterstitialIfReady(): Promise<boolean> {
   if (!shouldShowInterstitial() || !interstitialInstance) return false;
+  const instance = interstitialInstance;
   try {
-    await interstitialInstance.show();
-    lastInterstitialShownAt = Date.now();
-    return true;
+    setMusic(false);
+    return await new Promise<boolean>((resolve) => {
+      let settled = false;
+      const finish = (shown: boolean) => {
+        if (settled) return;
+        settled = true;
+        unsubClose();
+        unsubError();
+        if (shown) {
+          lastInterstitialShownAt = Date.now();
+        }
+        resolve(shown);
+      };
+
+      const unsubClose = instance.addAdEventListener(AdEventType.CLOSED, () => {
+        finish(true);
+      });
+      const unsubError = instance.addAdEventListener(AdEventType.ERROR, () => {
+        finish(false);
+      });
+
+      instance.show().catch((error) => {
+        console.warn('Could not show interstitial:', error);
+        finish(false);
+      });
+    });
   } catch (error) {
     console.warn('Could not show interstitial:', error);
     return false;
@@ -225,7 +251,11 @@ export function isRewardedReady(): boolean {
   return rewardedLoaded || isAdsRemoved;
 }
 
-/** Shows Rewarded Ad with onEarned callback */
+/**
+ * Shows Rewarded Ad, ensures game audio is stopped while the ad is open,
+ * and only triggers `onEarned` (which resumes gameplay & audio) AFTER the user
+ * closes (X) the ad and returns to the game screen.
+ */
 export async function showRewardedAd(onEarned: () => void): Promise<boolean> {
   // If ads are removed, player gets rewarded benefit instantly!
   if (isAdsRemoved) {
@@ -238,18 +268,53 @@ export async function showRewardedAd(onEarned: () => void): Promise<boolean> {
     return false;
   }
 
+  const instance = rewardedInstance;
   try {
-    const unsubscribeEarned = rewardedInstance.addAdEventListener(
-      RewardedAdEventType.EARNED_REWARD,
-      () => {
-        onEarned();
-        lastInterstitialShownAt = Date.now(); // Reset interstitial timer so they aren't hit back-to-back
-        unsubscribeEarned();
-      },
-    );
+    setMusic(false);
+    return await new Promise<boolean>((resolve) => {
+      let earned = false;
+      let settled = false;
 
-    await rewardedInstance.show();
-    return true;
+      const cleanup = () => {
+        unsubEarned();
+        unsubClose();
+        unsubError();
+      };
+
+      const unsubEarned = instance.addAdEventListener(
+        RewardedAdEventType.EARNED_REWARD,
+        () => {
+          earned = true;
+          lastInterstitialShownAt = Date.now(); // Reset interstitial timer so they aren't hit back-to-back
+        },
+      );
+
+      const unsubClose = instance.addAdEventListener(AdEventType.CLOSED, () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (earned) {
+          onEarned();
+        }
+        resolve(earned);
+      });
+
+      const unsubError = instance.addAdEventListener(AdEventType.ERROR, () => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(false);
+      });
+
+      instance.show().catch((error) => {
+        console.warn('Could not show rewarded ad:', error);
+        if (!settled) {
+          settled = true;
+          cleanup();
+          resolve(false);
+        }
+      });
+    });
   } catch (error) {
     console.warn('Could not show rewarded ad:', error);
     return false;
