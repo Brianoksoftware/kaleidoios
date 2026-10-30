@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import fs from 'fs';
 import zlib from 'zlib';
 import path from 'path';
@@ -14,22 +15,23 @@ function hex(color) {
   ];
 }
 
-function png(size, paint) {
-  const raw = Buffer.alloc((size * 4 + 1) * size);
+function png(size, paint, hasAlpha = true) {
+  const channels = hasAlpha ? 4 : 3;
+  const raw = Buffer.alloc((size * channels + 1) * size);
   const pixel = Buffer.alloc(4);
   for (let y = 0; y < size; y += 1) {
-    const row = y * (size * 4 + 1);
+    const row = y * (size * channels + 1);
     raw[row] = 0;
     for (let x = 0; x < size; x += 1) {
       paint(x, y, size, pixel);
-      pixel.copy(raw, row + 1 + x * 4);
+      pixel.copy(raw, row + 1 + x * channels, 0, channels);
     }
   }
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(size, 0);
   ihdr.writeUInt32BE(size, 4);
   ihdr[8] = 8;
-  ihdr[9] = 6;
+  ihdr[9] = hasAlpha ? 6 : 2;
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
     chunk('IHDR', ihdr),
@@ -91,8 +93,9 @@ function paintIcon(x, y, size, pixel, transparentOutside, scale = 1) {
     pixel.set([18, 8, 24, 255]);
     return;
   }
-  const spark = size * 0.44;
-  if (Math.hypot(dx - spark, dy) < size * 0.035) {
+  const sparkRadius = size * 0.035;
+  const spark = outer + sparkRadius * 0.82;
+  if (Math.hypot(dx - spark, dy) < sparkRadius) {
     pixel.set([255, 255, 255, 255]);
     return;
   }
@@ -100,27 +103,39 @@ function paintIcon(x, y, size, pixel, transparentOutside, scale = 1) {
 }
 
 const assets = path.join(process.cwd(), 'assets');
+const storeListing = path.join(process.cwd(), 'store-listing');
+const iosIconBuffer = png(1024, (x, y, size, pixel) => paintIcon(x, y, size, pixel, false), false);
 fs.writeFileSync(
   path.join(assets, 'icon.png'),
-  png(1024, (x, y, size, pixel) => paintIcon(x, y, size, pixel, false)),
+  iosIconBuffer,
 );
+if (fs.existsSync(storeListing)) {
+  fs.writeFileSync(
+    path.join(storeListing, 'ios-app-store-icon-1024.png'),
+    iosIconBuffer,
+  );
+}
 fs.writeFileSync(
   path.join(assets, 'android-icon-foreground.png'),
-  png(1024, (x, y, size, pixel) => paintIcon(x, y, size, pixel, true, 0.72)),
+  png(1024, (x, y, size, pixel) => paintIcon(x, y, size, pixel, true, 0.72), true),
+);
+fs.writeFileSync(
+  path.join(assets, 'splash-icon.png'),
+  png(1024, (x, y, size, pixel) => paintIcon(x, y, size, pixel, true, 0.62), true),
 );
 fs.writeFileSync(
   path.join(assets, 'android-icon-background.png'),
-  png(512, (x, y, size, pixel) => pixel.set([20, 8, 36, 255])),
+  png(512, (x, y, size, pixel) => pixel.set([20, 8, 36, 255]), false),
 );
 fs.writeFileSync(
   path.join(assets, 'android-icon-monochrome.png'),
   png(1024, (x, y, size, pixel) => {
     paintIcon(x, y, size, pixel, true, 0.72);
     if (pixel[3] > 0) pixel.set([255, 255, 255, 255]);
-  }),
+  }, true),
 );
 fs.writeFileSync(
   path.join(assets, 'favicon.png'),
-  png(192, (x, y, size, pixel) => paintIcon(x, y, size, pixel, false)),
+  png(192, (x, y, size, pixel) => paintIcon(x, y, size, pixel, false), false),
 );
 console.log('icons written');

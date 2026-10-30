@@ -81,6 +81,7 @@ export async function prepareAudio() {
     try {
       await setAudioModeAsync({
         playsInSilentMode: true,
+        allowsRecording: false,
         interruptionMode: 'duckOthers',
         shouldPlayInBackground: false,
       });

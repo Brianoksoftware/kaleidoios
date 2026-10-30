@@ -1,5 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Easing, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Animated, Easing, Linking, Modal, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -7,7 +7,7 @@ import { HUES } from '../game/palette';
 import { AD_UNITS, BannerAd, BannerAdSize } from '../services/ads';
 import { Emblem } from './Emblem';
 import { ChainGlyph, CrackGlyph, CrownIcon, HapticsIcon, PlayIcon, SoundIcon, SparkGlyph, StarGlyph } from './icons';
-import { display, fitFont, font, formatScore, Glass, GlowButton, Rise, Tap, Type } from './ui';
+import { display, fitFont, font, formatScore, GhostButton, Glass, GlowButton, Rise, Tap, Type } from './ui';
 
 type Props = {
   best: number;
@@ -19,15 +19,16 @@ type Props = {
   onToggleSound: () => void;
 };
 
-const TITLE = 'PRISM BLOOM';
+const TITLE = 'PRISM RING';
 
 export function MenuScreen({ best, haptics, sound, adsRemoved = false, onPlay, onToggleHaptics, onToggleSound }: Props) {
   const pulse = useRef(new Animated.Value(0)).current;
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const copyWidth = Math.max(140, width - 44);
+  const copyWidth = Math.max(140, Math.min(width, 520) - 44);
   const titleSize = Math.round(Math.min(44, Math.max(26, copyWidth / (TITLE.length * 0.72))));
-  const emblem = Math.round(Math.max(120, Math.min(width * 0.64, 280, height - insets.top - insets.bottom - 500)));
+  const emblem = Math.round(Math.max(120, Math.min(width * 0.64, 260, height - insets.top - insets.bottom - 500)));
   const tag = 'Spin the wheel. Chain the bloom.';
   const tagSize = fitFont(tag, copyWidth, 15, 11);
   const bestText = formatScore(best);
@@ -101,7 +102,7 @@ export function MenuScreen({ best, haptics, sound, adsRemoved = false, onPlay, o
           <Animated.View style={{ transform: [{ scale: playScale }] }}>
             <GlowButton
               label="PLAY"
-              accessibilityLabel="Play Prism Bloom"
+              accessibilityLabel="Play Prism Ring"
               onPress={onPlay}
               height={66}
               fontSize={22}
@@ -135,7 +136,69 @@ export function MenuScreen({ best, haptics, sound, adsRemoved = false, onPlay, o
             />
           </View>
         )}
+
+        <View style={styles.footerRow}>
+          <Tap
+            accessibilityRole="button"
+            accessibilityLabel="Privacy Policy and Support"
+            onPress={() => setPrivacyOpen(true)}
+            style={styles.privacyPill}
+          >
+            <Type style={styles.privacyText}>PRIVACY & SUPPORT</Type>
+          </Tap>
+        </View>
       </Rise>
+
+      <Modal
+        visible={privacyOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPrivacyOpen(false)}
+      >
+        <View style={[styles.modalBackdrop, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
+          <Glass radius={28} accent="#00F5D4" style={styles.modalCardOuter} contentStyle={styles.modalCard}>
+            <Type style={styles.modalTitle}>PRIVACY & SUPPORT</Type>
+            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+              <Type style={styles.modalSection}>ON-DEVICE DATA ONLY</Type>
+              <Type style={styles.modalBody}>
+                Prism Ring stores your high score, best combo, and sound/haptics preferences locally on your device. No account, login, or personal profile is ever required or collected.
+              </Type>
+
+              <Type style={styles.modalSection}>NON-PERSONALIZED ADS</Type>
+              <Type style={styles.modalBody}>
+                This game displays family-safe, non-personalized ads via Google AdMob. We do not track you across other companies&apos; apps or websites, and we do not sell your personal data. Technical device identifiers and coarse IP location may be processed by Google solely for ad delivery, frequency capping, and fraud prevention.
+              </Type>
+
+              <Type style={styles.modalSection}>PERMISSIONS</Type>
+              <Type style={styles.modalBody}>
+                Prism Ring uses network access to load ads and audio output for game sound effects. It never accesses your camera, microphone, contacts, photos, or precise GPS location.
+              </Type>
+
+              <Type style={styles.modalSection}>CONTACT & SUPPORT</Type>
+              <Type style={styles.modalBody}>
+                Questions, feedback, or support requests: brianokdev@gmail.com
+              </Type>
+            </ScrollView>
+
+            <View style={styles.modalActions}>
+              <GhostButton
+                label="EMAIL SUPPORT"
+                height={46}
+                onPress={() => {
+                  void Linking.openURL('mailto:brianokdev@gmail.com?subject=Prism%20Ring%20iOS%20Support');
+                }}
+              />
+              <GlowButton
+                label="CLOSE"
+                height={50}
+                fontSize={16}
+                shimmer={false}
+                onPress={() => setPrivacyOpen(false)}
+              />
+            </View>
+          </Glass>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -154,7 +217,7 @@ function Title({ size }: { size: number }) {
   }, [drops]);
 
   return (
-    <View style={styles.titleRow} accessible accessibilityRole="header" accessibilityLabel="Prism Bloom">
+    <View style={styles.titleRow} accessible accessibilityRole="header" accessibilityLabel="Prism Ring">
       {letters.map((letter, index) => {
         const value = drops[index];
         return (
@@ -346,6 +409,9 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   bottom: {
+    width: '100%',
+    maxWidth: 460,
+    alignSelf: 'center',
     gap: 12,
     paddingTop: 12,
   },
@@ -418,5 +484,67 @@ const styles = StyleSheet.create({
   },
   knobOff: {
     backgroundColor: 'rgba(255,255,255,0.6)',
+  },
+  footerRow: {
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  privacyPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  privacyText: {
+    color: 'rgba(255,255,255,0.42)',
+    fontFamily: font,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    fontSize: 10,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(8,4,18,0.88)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  modalCardOuter: {
+    width: '100%',
+    maxWidth: 440,
+    maxHeight: '86%',
+  },
+  modalCard: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    gap: 12,
+  },
+  modalTitle: {
+    color: '#FFFFFF',
+    fontFamily: display,
+    fontWeight: '900',
+    fontSize: 18,
+    letterSpacing: 2,
+    textAlign: 'center',
+  },
+  modalScroll: {
+    maxHeight: 340,
+  },
+  modalSection: {
+    color: '#00F5D4',
+    fontFamily: font,
+    fontWeight: '900',
+    fontSize: 11,
+    letterSpacing: 1.6,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  modalBody: {
+    color: 'rgba(255,255,255,0.84)',
+    fontFamily: font,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  modalActions: {
+    gap: 10,
+    marginTop: 6,
   },
 });

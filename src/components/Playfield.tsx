@@ -207,7 +207,7 @@ export const PlayStage = memo(
           const x = center + Math.cos(spark.angle) * spark.radius;
           const y = center + Math.sin(spark.angle) * spark.radius;
           const ink = sparkPaint(spark.kind, spark.color);
-          const moved = Math.abs(x - pose.x) > 0.45 || Math.abs(y - pose.y) > 0.45;
+          const moved = Math.abs(x - pose.x) > 0.12 || Math.abs(y - pose.y) > 0.12;
           const recolor = pose.color !== ink;
           if (spark.kind === 'rush') {
             if (sparkActive.current[index]) {

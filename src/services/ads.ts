@@ -1,34 +1,54 @@
 import { Platform } from 'react-native';
-import {
+import MobileAds, {
   AdEventType,
   BannerAd,
   BannerAdSize,
   InterstitialAd,
+  MaxAdContentRating,
   RewardedAd,
   RewardedAdEventType,
   TestIds,
 } from 'react-native-google-mobile-ads';
 
 /**
- * Official AdMob Test Ad Unit IDs.
- * Test IDs work safely out of the box during development builds.
+ * Production AdMob Ad Unit IDs (use `/` format: ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY).
+ * Replace these strings with your live Ad Unit IDs from the Google AdMob console.
+ * While set to empty strings (or in __DEV__ mode), official Google TestIds are used automatically.
  */
+const PROD_IOS_UNITS = {
+  BANNER: 'ca-app-pub-3223089616416804/4448440419',
+  INTERSTITIAL: 'ca-app-pub-3223089616416804/8857750870',
+  REWARDED: 'ca-app-pub-3223089616416804/4104117648',
+};
+
+const PROD_ANDROID_UNITS = {
+  BANNER: '', // e.g. 'ca-app-pub-XXXXXXXXXXXXXXXX/4444444444'
+  INTERSTITIAL: '', // e.g. 'ca-app-pub-XXXXXXXXXXXXXXXX/5555555555'
+  REWARDED: '', // e.g. 'ca-app-pub-XXXXXXXXXXXXXXXX/6666666666'
+};
+
 export const AD_UNITS = {
-  BANNER: Platform.select({
-    android: TestIds.BANNER,
-    ios: TestIds.BANNER,
-    default: TestIds.BANNER,
-  }),
-  INTERSTITIAL: Platform.select({
-    android: TestIds.INTERSTITIAL,
-    ios: TestIds.INTERSTITIAL,
-    default: TestIds.INTERSTITIAL,
-  }),
-  REWARDED: Platform.select({
-    android: TestIds.REWARDED,
-    ios: TestIds.REWARDED,
-    default: TestIds.REWARDED,
-  }),
+  BANNER: __DEV__
+    ? TestIds.BANNER
+    : Platform.select({
+        ios: PROD_IOS_UNITS.BANNER || TestIds.BANNER,
+        android: PROD_ANDROID_UNITS.BANNER || TestIds.BANNER,
+        default: TestIds.BANNER,
+      }),
+  INTERSTITIAL: __DEV__
+    ? TestIds.INTERSTITIAL
+    : Platform.select({
+        ios: PROD_IOS_UNITS.INTERSTITIAL || TestIds.INTERSTITIAL,
+        android: PROD_ANDROID_UNITS.INTERSTITIAL || TestIds.INTERSTITIAL,
+        default: TestIds.INTERSTITIAL,
+      }),
+  REWARDED: __DEV__
+    ? TestIds.REWARDED
+    : Platform.select({
+        ios: PROD_IOS_UNITS.REWARDED || TestIds.REWARDED,
+        android: PROD_ANDROID_UNITS.REWARDED || TestIds.REWARDED,
+        default: TestIds.REWARDED,
+      }),
 };
 
 // Frequency Cap Rules
@@ -39,19 +59,72 @@ const RUNS_BETWEEN_ADS = 3; // Show interstitial every 3 completed runs
 let runsCount = 0;
 let lastInterstitialShownAt = 0;
 let isAdsRemoved = false;
+let sdkInitialized = false;
+let sdkInitializing: Promise<void> | null = null;
 
 // Ad Instances
 let interstitialInstance: InterstitialAd | null = null;
 let interstitialLoaded = false;
 let rewardedInstance: RewardedAd | null = null;
 let rewardedLoaded = false;
+const rewardedListeners = new Set<(ready: boolean) => void>();
+
+function notifyRewardedListeners() {
+  const ready = isRewardedReady();
+  rewardedListeners.forEach((listener) => listener(ready));
+}
+
+export function subscribeRewardedReady(listener: (ready: boolean) => void): () => void {
+  rewardedListeners.add(listener);
+  listener(isRewardedReady());
+  return () => {
+    rewardedListeners.delete(listener);
+  };
+}
 
 export function setAdsRemoved(removed: boolean) {
   isAdsRemoved = removed;
+  notifyRewardedListeners();
 }
 
 export function getAdsRemoved(): boolean {
   return isAdsRemoved;
+}
+
+/** Sync in-app sound toggle with AdMob video ad audio on iOS & Android */
+export function syncAdMute(muted: boolean) {
+  if (Platform.OS === 'web') return;
+  try {
+    MobileAds().setAppMuted(muted);
+  } catch {
+    // Ignore before native SDK is ready
+  }
+}
+
+/**
+ * Initializes Google Mobile Ads with family-safe content rating (G)
+ * to comply with Apple App Store 4+ age rating (Guideline 2.3.6).
+ */
+export async function initializeAds(muted = false): Promise<void> {
+  if (Platform.OS === 'web' || sdkInitialized) return;
+  if (sdkInitializing) return sdkInitializing;
+
+  sdkInitializing = (async () => {
+    try {
+      await MobileAds().setRequestConfiguration({
+        maxAdContentRating: MaxAdContentRating.G,
+        tagForChildDirectedTreatment: false,
+        tagForUnderAgeOfConsent: false,
+      });
+      await MobileAds().initialize();
+      MobileAds().setAppMuted(muted);
+      sdkInitialized = true;
+    } catch (error) {
+      console.warn('AdMob initialization warning:', error);
+    }
+  })();
+
+  return sdkInitializing;
 }
 
 /** Preload Interstitial */
@@ -96,6 +169,7 @@ export function preloadRewarded() {
 
       rewardedInstance.addAdEventListener(RewardedAdEventType.LOADED, () => {
         rewardedLoaded = true;
+        notifyRewardedListeners();
       });
 
       rewardedInstance.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
@@ -104,11 +178,13 @@ export function preloadRewarded() {
 
       rewardedInstance.addAdEventListener(AdEventType.CLOSED, () => {
         rewardedLoaded = false;
+        notifyRewardedListeners();
         preloadRewarded();
       });
 
       rewardedInstance.addAdEventListener(AdEventType.ERROR, () => {
         rewardedLoaded = false;
+        notifyRewardedListeners();
       });
     }
 
@@ -146,7 +222,7 @@ export async function showInterstitialIfReady(): Promise<boolean> {
 
 /** Rewarded is ready to show */
 export function isRewardedReady(): boolean {
-  return rewardedLoaded && !isAdsRemoved;
+  return rewardedLoaded || isAdsRemoved;
 }
 
 /** Shows Rewarded Ad with onEarned callback */

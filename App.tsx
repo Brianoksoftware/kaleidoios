@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BackHandler, PanResponder, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useKeepAwake } from 'expo-keep-awake';
@@ -14,10 +14,14 @@ import { font, Type } from './src/components/ui';
 import { HUES, waveName } from './src/game/palette';
 import { useKaleido } from './src/game/useKaleido';
 import {
+  initializeAds,
+  isRewardedReady,
   preloadInterstitial,
   preloadRewarded,
   showInterstitialIfReady,
   showRewardedAd,
+  subscribeRewardedReady,
+  syncAdMute,
 } from './src/services/ads';
 
 export default function App() {
@@ -36,16 +40,26 @@ function Game() {
   const stageRef = useRef<StageHandle>(null);
   const { hud, stateRef, booted, play, revive, turn, pause, resume, menu, toggleHaptics, toggleSound, setSize } =
     useKaleido(stageRef);
+  const [rewardedReady, setRewardedReady] = useState(() => isRewardedReady());
 
-  // Preload test ads only after app is fully booted and user is idle
+  useEffect(() => subscribeRewardedReady(setRewardedReady), []);
+
+  useEffect(() => {
+    if (!booted) return;
+    syncAdMute(!hud.sound);
+  }, [booted, hud.sound]);
+
+  // Initialize AdMob (with G content rating for 4+ App Store compliance) and preload ads after boot
   useEffect(() => {
     if (!booted) return;
     const timer = setTimeout(() => {
-      preloadInterstitial();
-      preloadRewarded();
-    }, 2500);
+      void initializeAds(!hud.sound).then(() => {
+        preloadInterstitial();
+        preloadRewarded();
+      });
+    }, 1800);
     return () => clearTimeout(timer);
-  }, [booted]);
+  }, [booted, hud.sound]);
 
   // Safe handler: Shows interstitial if rules are satisfied, then plays
   const handleAgain = async () => {
@@ -66,8 +80,8 @@ function Game() {
     });
   };
 
-  // Leave room for insets, HUD at top, and control dock at bottom
-  const size = Math.min(width - 32, Math.max(200, height - insets.top - insets.bottom - 280));
+  // Leave room for insets, HUD at top, and control dock at bottom (capped at 600pt for iPad)
+  const size = Math.min(width - 32, 600, Math.max(200, height - insets.top - insets.bottom - 280));
   useEffect(() => {
     setSize(size);
   }, [size, setSize]);
@@ -199,7 +213,7 @@ function Game() {
           bestCombo={Math.max(hud.maxCombo, hud.bestCombo)}
           width={width}
           insets={insets}
-          canRevive={!hud.revived}
+          canRevive={!hud.revived && rewardedReady}
           onRevive={handleRevive}
           onAgain={handleAgain}
           onMenu={handleMenu}

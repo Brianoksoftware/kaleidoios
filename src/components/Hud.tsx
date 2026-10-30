@@ -1,7 +1,6 @@
 import { memo, useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { waveProgress } from '../game/palette';
 import { GemPip, PauseIcon, RotateIcon } from './icons';
@@ -19,7 +18,8 @@ type HudBarProps = {
 };
 
 export function HudBar({ score, best, cracks, catches, accent, width }: HudBarProps) {
-  const hudInner = Math.max(160, width - 64);
+  const cappedWidth = Math.min(width, 592);
+  const hudInner = Math.max(160, cappedWidth - 64);
   const scoreWidth = Math.max(72, hudInner * 0.4);
   const sideWidth = Math.max(64, hudInner * 0.3);
   const scoreText = formatScore(score);
@@ -295,7 +295,10 @@ const SPIN = 82;
 
 const styles = StyleSheet.create({
   hudOuter: {
-    marginHorizontal: 16,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,
@@ -427,7 +430,10 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   dockOuter: {
-    marginHorizontal: 16,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -6 },
     shadowOpacity: 0.35,

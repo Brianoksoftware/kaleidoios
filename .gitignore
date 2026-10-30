@@ -42,3 +42,4 @@ build/
 # generated native folders
 /ios
 /android
+.cursor/

@@ -66,7 +66,7 @@ type PauseProps = {
 };
 
 export function PauseOverlay({ score, tier, width, insets, onResume, onMenu }: PauseProps) {
-  const sheetWidth = Math.max(160, width - 44);
+  const sheetWidth = Math.max(160, Math.min(width, 540) - 44);
   const tile = (sheetWidth - 32 - 10) / 2;
   return (
     <Scrim>
@@ -139,7 +139,7 @@ export function GameOverOverlay({
   onAgain,
   onMenu,
 }: OverProps) {
-  const sheetWidth = Math.max(160, width - 44);
+  const sheetWidth = Math.max(160, Math.min(width, 540) - 44);
   const scoreText = formatScore(score);
   const finalSize = fitFont(scoreText, sheetWidth - 40, 68, 28);
   const tile = (sheetWidth - 32 - 16) / 3;
@@ -263,6 +263,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardWrap: {
+    width: '100%',
+    maxWidth: 540,
+    alignSelf: 'center',
     paddingHorizontal: 16,
   },
   card: {
@@ -377,6 +380,9 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   actions: {
+    width: '100%',
+    maxWidth: 540,
+    alignSelf: 'center',
     paddingHorizontal: 16,
     gap: 10,
   },

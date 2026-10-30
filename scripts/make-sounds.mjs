@@ -2,6 +2,7 @@
  * Original short WAVs for Kaleido. No third-party samples.
  * Run: node scripts/make-sounds.mjs
  */
+import { Buffer } from 'node:buffer';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
