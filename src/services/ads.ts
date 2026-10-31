@@ -1,16 +1,40 @@
-import { Platform } from 'react-native';
-import MobileAds, {
-  AdEventType,
-  BannerAd,
-  BannerAdSize,
-  InterstitialAd,
-  MaxAdContentRating,
-  RewardedAd,
-  RewardedAdEventType,
-  TestIds,
+import type { ComponentType } from 'react';
+import { Platform, TurboModuleRegistry } from 'react-native';
+import type {
+  InterstitialAd as InterstitialAdType,
+  RewardedAd as RewardedAdType,
 } from 'react-native-google-mobile-ads';
 
 import { setMusic } from '../audio/sfx';
+
+/**
+ * Safely load `react-native-google-mobile-ads` only when its native TurboModule
+ * is present (standalone / EAS builds). This prevents Expo Go from crashing with
+ * "TurboModuleRegistry.getEnforcing(...): 'RNGoogleMobileAdsModule' could not be found".
+ */
+const hasNativeAds =
+  Platform.OS !== 'web' && TurboModuleRegistry.get('RNGoogleMobileAdsModule') != null;
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const gma: typeof import('react-native-google-mobile-ads') | null = hasNativeAds ? require('react-native-google-mobile-ads') : null;
+
+const MobileAds = gma?.default;
+const AdEventType = gma?.AdEventType;
+const InterstitialAd = gma?.InterstitialAd;
+const MaxAdContentRating = gma?.MaxAdContentRating;
+const RewardedAd = gma?.RewardedAd;
+const RewardedAdEventType = gma?.RewardedAdEventType;
+const TestIds = gma?.TestIds ?? {
+  BANNER: 'ca-app-pub-3940256099942544/6300978111',
+  INTERSTITIAL: 'ca-app-pub-3940256099942544/1033173712',
+  REWARDED: 'ca-app-pub-3940256099942544/5224354917',
+};
+
+const NoopBanner: ComponentType<Record<string, unknown>> = () => null;
+const BannerAd = (gma?.BannerAd ?? NoopBanner) as typeof import('react-native-google-mobile-ads').BannerAd;
+const BannerAdSize = gma?.BannerAdSize ?? ({
+  ANCHORED_ADAPTIVE_BANNER: 'ANCHORED_ADAPTIVE_BANNER',
+} as typeof import('react-native-google-mobile-ads').BannerAdSize);
 
 /**
  * Production AdMob Ad Unit IDs (use `/` format: ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY).
@@ -65,9 +89,9 @@ let sdkInitialized = false;
 let sdkInitializing: Promise<void> | null = null;
 
 // Ad Instances
-let interstitialInstance: InterstitialAd | null = null;
+let interstitialInstance: InterstitialAdType | null = null;
 let interstitialLoaded = false;
-let rewardedInstance: RewardedAd | null = null;
+let rewardedInstance: RewardedAdType | null = null;
 let rewardedLoaded = false;
 const rewardedListeners = new Set<(ready: boolean) => void>();
 
@@ -95,7 +119,7 @@ export function getAdsRemoved(): boolean {
 
 /** Sync in-app sound toggle with AdMob video ad audio on iOS & Android */
 export function syncAdMute(muted: boolean) {
-  if (Platform.OS === 'web') return;
+  if (!hasNativeAds || !MobileAds) return;
   try {
     MobileAds().setAppMuted(muted);
   } catch {
@@ -108,7 +132,7 @@ export function syncAdMute(muted: boolean) {
  * to comply with Apple App Store 4+ age rating (Guideline 2.3.6).
  */
 export async function initializeAds(muted = false): Promise<void> {
-  if (Platform.OS === 'web' || sdkInitialized) return;
+  if (!hasNativeAds || !MobileAds || !MaxAdContentRating || sdkInitialized) return;
   if (sdkInitializing) return sdkInitializing;
 
   sdkInitializing = (async () => {
@@ -131,7 +155,7 @@ export async function initializeAds(muted = false): Promise<void> {
 
 /** Preload Interstitial */
 export function preloadInterstitial() {
-  if (isAdsRemoved || Platform.OS === 'web') return;
+  if (isAdsRemoved || !hasNativeAds || !InterstitialAd || !AdEventType) return;
   try {
     if (!interstitialInstance) {
       interstitialInstance = InterstitialAd.createForAdRequest(AD_UNITS.INTERSTITIAL, {
@@ -162,7 +186,7 @@ export function preloadInterstitial() {
 
 /** Preload Rewarded */
 export function preloadRewarded() {
-  if (Platform.OS === 'web') return;
+  if (!hasNativeAds || !RewardedAd || !RewardedAdEventType || !AdEventType) return;
   try {
     if (!rewardedInstance) {
       rewardedInstance = RewardedAd.createForAdRequest(AD_UNITS.REWARDED, {
@@ -200,7 +224,7 @@ export function preloadRewarded() {
 
 /** Checks whether an interstitial is allowed by frequency cap rules */
 export function shouldShowInterstitial(): boolean {
-  if (isAdsRemoved) return false;
+  if (isAdsRemoved || !hasNativeAds) return false;
   runsCount += 1;
   const now = Date.now();
   if (runsCount <= GAMES_BEFORE_FIRST_AD) return false;
@@ -211,8 +235,10 @@ export function shouldShowInterstitial(): boolean {
 
 /** Shows Interstitial and waits until the user closes (X) the ad before resolving */
 export async function showInterstitialIfReady(): Promise<boolean> {
-  if (!shouldShowInterstitial() || !interstitialInstance) return false;
+  if (!shouldShowInterstitial() || !interstitialInstance || !AdEventType) return false;
   const instance = interstitialInstance;
+  const closeEvent = AdEventType.CLOSED;
+  const errorEvent = AdEventType.ERROR;
   try {
     setMusic(false);
     return await new Promise<boolean>((resolve) => {
@@ -228,14 +254,14 @@ export async function showInterstitialIfReady(): Promise<boolean> {
         resolve(shown);
       };
 
-      const unsubClose = instance.addAdEventListener(AdEventType.CLOSED, () => {
+      const unsubClose = instance.addAdEventListener(closeEvent, () => {
         finish(true);
       });
-      const unsubError = instance.addAdEventListener(AdEventType.ERROR, () => {
+      const unsubError = instance.addAdEventListener(errorEvent, () => {
         finish(false);
       });
 
-      instance.show().catch((error) => {
+      instance.show().catch((error: unknown) => {
         console.warn('Could not show interstitial:', error);
         finish(false);
       });
@@ -263,12 +289,15 @@ export async function showRewardedAd(onEarned: () => void): Promise<boolean> {
     return true;
   }
 
-  if (!rewardedInstance || !rewardedLoaded) {
+  if (!rewardedInstance || !rewardedLoaded || !RewardedAdEventType || !AdEventType) {
     preloadRewarded();
     return false;
   }
 
   const instance = rewardedInstance;
+  const earnedEvent = RewardedAdEventType.EARNED_REWARD;
+  const closeEvent = AdEventType.CLOSED;
+  const errorEvent = AdEventType.ERROR;
   try {
     setMusic(false);
     return await new Promise<boolean>((resolve) => {
@@ -282,14 +311,14 @@ export async function showRewardedAd(onEarned: () => void): Promise<boolean> {
       };
 
       const unsubEarned = instance.addAdEventListener(
-        RewardedAdEventType.EARNED_REWARD,
+        earnedEvent,
         () => {
           earned = true;
           lastInterstitialShownAt = Date.now(); // Reset interstitial timer so they aren't hit back-to-back
         },
       );
 
-      const unsubClose = instance.addAdEventListener(AdEventType.CLOSED, () => {
+      const unsubClose = instance.addAdEventListener(closeEvent, () => {
         if (settled) return;
         settled = true;
         cleanup();
@@ -299,14 +328,14 @@ export async function showRewardedAd(onEarned: () => void): Promise<boolean> {
         resolve(earned);
       });
 
-      const unsubError = instance.addAdEventListener(AdEventType.ERROR, () => {
+      const unsubError = instance.addAdEventListener(errorEvent, () => {
         if (settled) return;
         settled = true;
         cleanup();
         resolve(false);
       });
 
-      instance.show().catch((error) => {
+      instance.show().catch((error: unknown) => {
         console.warn('Could not show rewarded ad:', error);
         if (!settled) {
           settled = true;
