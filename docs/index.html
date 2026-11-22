@@ -3,144 +3,828 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Privacy Policy & Support — Prism Ring: Color Wheel Game</title>
+  <title>Prism Ring: Color Wheel Game — Neon Reflex Puzzle for iPhone &amp; iPad</title>
+  <meta name="description" content="Spin the glowing glass kaleidoscope ring, match incoming sparks by color, chain 3-of-a-kind Blooms, and ignite 2× Fever combos on iPhone and iPad." />
+  <meta name="theme-color" content="#140824" />
+  <link rel="icon" type="image/png" href="assets/icon.png" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Prism Ring: Color Wheel Game" />
+  <meta property="og:description" content="Spin the wheel. Match the hue. Chain the bloom! A fast, hypnotic neon color-wheel reflex puzzle built for iPhone &amp; iPad." />
+  <meta property="og:url" content="https://brianoksoftware.github.io/kaleidoios/" />
+  <meta property="og:image" content="https://brianoksoftware.github.io/kaleidoios/assets/01-spin-to-match.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Prism Ring: Color Wheel Game" />
+  <meta name="twitter:description" content="Spin the glowing prism ring, chain 3-of-a-kind Blooms, and chase your Zenith score on iPhone &amp; iPad." />
+  <meta name="twitter:image" content="https://brianoksoftware.github.io/kaleidoios/assets/01-spin-to-match.png" />
+
   <style>
     :root {
-      --bg: #0e061c;
-      --card: #180c2e;
-      --border: rgba(0, 245, 212, 0.28);
-      --accent: #00f5d4;
-      --rose: #ff4d6d;
-      --text: #f4f1ff;
+      --bg: #0b0416;
+      --bg-deep: #140824;
+      --surface: rgba(24, 12, 46, 0.72);
+      --surface-solid: #180c2e;
+      --border: rgba(255, 255, 255, 0.11);
+      --border-glow: rgba(0, 245, 212, 0.35);
+      --text: #f7f4ff;
       --muted: #b8aed0;
+      --cyan: #00f5d4;
+      --violet: #9b5de5;
+      --pink: #f15bb5;
+      --rose: #ff4d6d;
+      --gold: #ffb703;
+      --lime: #70e000;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --max-w: 1120px;
     }
+
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
-      padding: 40px 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #24103f 0%, var(--bg) 70%);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
       color: var(--text);
-      line-height: 1.65;
+      line-height: 1.6;
+      overflow-x: hidden;
     }
-    .container {
-      max-width: 760px;
+
+    /* Ambient prism backdrop */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      background:
+        radial-gradient(600px circle at 15% 10%, rgba(155, 93, 229, 0.22), transparent 60%),
+        radial-gradient(560px circle at 85% 15%, rgba(0, 245, 212, 0.16), transparent 60%),
+        radial-gradient(640px circle at 50% 85%, rgba(255, 77, 109, 0.14), transparent 65%),
+        linear-gradient(180deg, #120624 0%, #0b0416 100%);
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      max-width: var(--max-w);
       margin: 0 auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 36px 32px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      padding: 0 24px;
     }
-    .badge {
-      display: inline-block;
+
+    /* Navbar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: rgba(11, 4, 22, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 68px;
+      gap: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: 0.3px;
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 245, 212, 0.25);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), #4cc9f0 55%, var(--violet));
+      color: #090312;
+      box-shadow: 0 10px 30px rgba(0, 245, 212, 0.28);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 36px rgba(0, 245, 212, 0.42);
+    }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .btn-sm {
+      padding: 9px 16px;
+      font-size: 13px;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 64px 0 80px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: center;
+      gap: 48px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      background: rgba(0, 245, 212, 0.1);
+      border: 1px solid rgba(0, 245, 212, 0.32);
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 20px;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(38px, 5.2vw, 60px);
+      line-height: 1.06;
+      letter-spacing: -1.2px;
+      font-weight: 900;
+    }
+
+    .grad-text {
+      background: linear-gradient(95deg, var(--cyan) 0%, #c77dff 45%, var(--rose) 85%, var(--gold) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      margin: 0 0 28px;
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 540px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .trust-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(247, 244, 255, 0.85);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    /* Phone mockup */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    .phone-glow {
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--cyan), var(--violet), var(--pink), var(--rose), var(--gold), var(--lime), var(--cyan));
+      filter: blur(70px);
+      opacity: 0.34;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: spinSlow 18s linear infinite;
+    }
+
+    @keyframes spinSlow {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .phone-frame {
+      position: relative;
+      width: 286px;
+      padding: 11px;
+      border-radius: 44px;
+      background: linear-gradient(160deg, #2a1d44, #0f081e 55%, #1d1236);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        0 30px 70px rgba(0, 0, 0, 0.65),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      animation: floatY 5.5s ease-in-out infinite;
+    }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .phone-screen {
+      display: block;
+      width: 100%;
+      border-radius: 34px;
+      overflow: hidden;
+      background: #0a1420;
+    }
+
+    .phone-screen img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Sections */
+    section {
+      padding: 64px 0;
+    }
+
+    .section-head {
+      text-align: center;
+      max-width: 680px;
+      margin: 0 auto 42px;
+    }
+
+    .section-eyebrow {
       font-size: 12px;
       font-weight: 800;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: var(--accent);
-      background: rgba(0, 245, 212, 0.1);
-      border: 1px solid var(--border);
-      padding: 6px 14px;
-      border-radius: 999px;
-      margin-bottom: 14px;
-    }
-    h1 {
-      margin: 0 0 8px;
-      font-size: 28px;
-      letter-spacing: 0.5px;
-    }
-    .meta {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    h2 {
-      color: var(--accent);
-      font-size: 16px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      margin-top: 28px;
+      color: var(--cyan);
       margin-bottom: 10px;
     }
-    p, li {
-      color: rgba(244, 241, 255, 0.9);
-      font-size: 15px;
+
+    .section-head h2 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 3.6vw, 40px);
+      letter-spacing: -0.6px;
+      line-height: 1.15;
     }
-    ul {
-      padding-left: 20px;
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
     }
-    a {
-      color: var(--accent);
-      text-decoration: none;
+
+    /* Screenshots Gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 18px;
     }
-    a:hover {
-      text-decoration: underline;
+
+    .shot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 10px 10px 14px;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      cursor: zoom-in;
     }
-    .support-box {
-      margin-top: 32px;
-      padding: 20px 24px;
+
+    .shot-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-glow);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .shot-card img {
+      display: block;
+      width: 100%;
+      border-radius: 14px;
+      margin-bottom: 10px;
+    }
+
+    .shot-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .shot-sub {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    /* Feature Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 26px;
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.24);
+      transform: translateY(-3px);
+    }
+
+    .icon-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14.5px;
+    }
+
+    /* Tier Strip */
+    .tiers {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .tier {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px 14px;
+      text-align: center;
+    }
+
+    .tier-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+    }
+
+    .tier-name {
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .tier-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* CTA Banner */
+    .cta-banner {
+      background:
+        radial-gradient(500px circle at 10% 0%, rgba(0, 245, 212, 0.18), transparent 60%),
+        radial-gradient(500px circle at 90% 100%, rgba(255, 77, 109, 0.2), transparent 60%),
+        var(--surface-solid);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      border-radius: 30px;
+      padding: 48px 32px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .cta-banner img {
+      width: 72px;
+      height: 72px;
       border-radius: 18px;
-      background: rgba(255, 77, 109, 0.1);
-      border: 1px solid rgba(255, 77, 109, 0.35);
+      margin-bottom: 18px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .cta-banner h2 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 3.4vw, 36px);
+    }
+
+    .cta-banner p {
+      margin: 0 auto 24px;
+      max-width: 520px;
+      color: var(--muted);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 36px 0 48px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+      color: var(--muted);
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan);
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(7, 2, 16, 0.88);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-height: 90vh;
+      max-width: 92vw;
+      border-radius: 26px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .lead { margin-left: auto; margin-right: auto; }
+      .cta-row, .trust-row { justify-content: center; }
+      .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tiers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hero { padding: 40px 0 56px; }
+      .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cards-grid { grid-template-columns: 1fr; }
+      .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .phone-frame { width: 252px; }
     }
   </style>
 </head>
 <body>
-  <main class="container">
-    <span class="badge">Privacy &amp; Support</span>
-    <h1>Prism Ring: Color Wheel Game</h1>
-    <div class="meta">
-      <strong>Bundle ID:</strong> <code>com.prismring.game</code> &bull;
-      <strong>Platforms:</strong> iOS &amp; iPadOS (iPhone &amp; iPad) &bull;
-      <strong>Effective Date:</strong> 30 October 2026
+  <div class="ambient" aria-hidden="true"></div>
+
+  <header>
+    <div class="wrap nav">
+      <a class="brand" href="#top">
+        <img src="assets/icon.png" alt="Prism Ring app icon" />
+        <span>Prism Ring</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#screenshots">Screenshots</a>
+        <a href="#features">Features</a>
+        <a href="#tiers">Tiers</a>
+        <a href="privacy.html">Privacy &amp; Support</a>
+      </nav>
+      <a class="btn btn-primary btn-sm" href="https://apps.apple.com/app/id6837953058" target="_blank" rel="noopener">
+        App Store
+      </a>
     </div>
+  </header>
 
-    <p>
-      This policy explains how <strong>Prism Ring: Color Wheel Game</strong> handles information when you play on iPhone or iPad. The developer (<strong>brianoksoftware</strong>) does not run an account system and does not operate a backend server for this game.
-    </p>
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="pill">
+            <span class="pill-dot"></span>
+            Built for iPhone &amp; iPad
+          </div>
+          <h1>
+            Spin the Wheel.<br />
+            Match the Hue.<br />
+            <span class="grad-text">Chain the Bloom.</span>
+          </h1>
+          <p class="lead">
+            <strong>Prism Ring: Color Wheel Game</strong> is a fast, hypnotic neon reflex puzzle. Rotate a glowing glass kaleidoscope ring to catch incoming sparks on matching colored petals before they shatter the glass.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="https://apps.apple.com/app/id6837953058" target="_blank" rel="noopener">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.78-.96 2.84 1.04.08 2.09-.52 2.72-1.3z"/>
+              </svg>
+              Download on the App Store
+            </a>
+            <a class="btn btn-ghost" href="#screenshots">Explore Gameplay</a>
+          </div>
+          <div class="trust-row">
+            <span class="chip">Rated 4+</span>
+            <span class="chip">120Hz ProMotion</span>
+            <span class="chip">Tactile Haptics</span>
+            <span class="chip">Zero Sign-Up</span>
+            <span class="chip">No Cross-App Tracking</span>
+          </div>
+        </div>
 
-    <h2>1. Information Stored on Your Device</h2>
-    <p>The app saves the following locally on your device, and only on your device:</p>
-    <ul>
-      <li>Your best score and best combo streak</li>
-      <li>Whether sound effects/music and haptics are turned on</li>
-      <li>Whether ads have been removed on that device</li>
-    </ul>
-    <p>
-      This data is stored using standard on-device storage (<code>UserDefaults</code> / <code>AsyncStorage</code>) and is never transmitted to the developer. Uninstalling the app deletes it.
-    </p>
+        <div class="hero-visual">
+          <div class="phone-glow" aria-hidden="true"></div>
+          <div class="phone-frame">
+            <div class="phone-screen">
+              <img src="assets/01-spin-to-match.png" alt="Prism Ring gameplay on iPhone showing colored glass wheel and incoming sparks" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <h2>2. Advertising (Non-Personalized)</h2>
-    <p>
-      The app displays family-safe (<code>G</code>-rated) ads through Google AdMob. Ads may appear as a banner on the main menu, an occasional full-screen interstitial ad after completed runs, and an optional rewarded ad if you choose to revive a run.
-    </p>
-    <p>
-      All ad requests are made as <strong>non-personalized</strong> (<code>requestNonPersonalizedAdsOnly: true</code>). We do not request App Tracking Transparency (ATT) permission on iOS and do not track you across apps or websites owned by other companies.
-    </p>
-    <p>
-      To deliver ads, cap frequency, and prevent fraud, Google AdMob may automatically receive standard technical information from your device (such as coarse IP region, device model/screen size, ad interaction events, and Apple <code>SKAdNetwork</code> attribution signals) governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.
-    </p>
+    <!-- Screenshots -->
+    <section id="screenshots">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">In-Game Previews</div>
+          <h2>Crisp Neon Glass at 120Hz</h2>
+          <p>Tap any screenshot to view it full-size.</p>
+        </div>
 
-    <h2>3. Permissions</h2>
-    <p>
-      Prism Ring uses network access to load ads and plays audio for in-game sound effects and music. It does <strong>not</strong> request or use your microphone, camera, contacts, photo library, health data, or precise GPS location.
-    </p>
+        <div class="gallery">
+          <figure class="shot-card" data-src="assets/01-spin-to-match.png" style="margin:0;">
+            <img src="assets/01-spin-to-match.png" alt="Spin to Match gameplay" loading="lazy" />
+            <figcaption class="shot-title">Spin to Match</figcaption>
+            <div class="shot-sub">Align petals with sparks</div>
+          </figure>
+          <figure class="shot-card" data-src="assets/02-chain-bloom.png" style="margin:0;">
+            <img src="assets/02-chain-bloom.png" alt="Chain 3 catches to trigger a Bloom" loading="lazy" />
+            <figcaption class="shot-title">Chain a Bloom</figcaption>
+            <div class="shot-sub">3 matching hues clear the screen</div>
+          </figure>
+          <figure class="shot-card" data-src="assets/03-fever-combos.png" style="margin:0;">
+            <img src="assets/03-fever-combos.png" alt="Ignite 2x Fever Combos" loading="lazy" />
+            <figcaption class="shot-title">2&times; Fever Mode</figcaption>
+            <div class="shot-sub">Hit 8&times; streaks for double points</div>
+          </figure>
+          <figure class="shot-card" data-src="assets/04-protect-glass.png" style="margin:0;">
+            <img src="assets/04-protect-glass.png" alt="Protect the glass ring from shattering" loading="lazy" />
+            <figcaption class="shot-title">Protect the Glass</figcaption>
+            <div class="shot-sub">Slow time with Prism sparks</div>
+          </figure>
+          <figure class="shot-card" data-src="assets/05-zenith-menu.png" style="margin:0;">
+            <img src="assets/05-zenith-menu.png" alt="Main menu and Zenith tier progression" loading="lazy" />
+            <figcaption class="shot-title">Chase Zenith</figcaption>
+            <div class="shot-sub">Track best score &amp; combo</div>
+          </figure>
+        </div>
+      </div>
+    </section>
 
-    <h2>4. Children's Privacy</h2>
-    <p>
-      Prism Ring is a general-audience arcade puzzle game (<code>4+</code> on the Apple App Store) and only serves family-safe (<code>MaxAdContentRating.G</code>), non-personalized advertisements. We do not knowingly collect personal information from children.
-    </p>
+    <!-- Features -->
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">Easy to Learn, Thrilling to Master</div>
+          <h2>Designed for Instant Arcade Flow</h2>
+          <p>Precision controls, rewarding risk-and-reward mechanics, and silky-smooth performance on every iPhone and iPad.</p>
+        </div>
 
-    <div class="support-box">
-      <h2 style="margin-top: 0; color: #ff4d6d;">5. Contact &amp; App Support</h2>
-      <p style="margin-bottom: 0;">
-        For support requests, bug reports, or privacy inquiries, please email:<br />
-        <strong><a href="mailto:brianokdev@gmail.com?subject=Prism%20Ring%20Support">brianokdev@gmail.com</a></strong>
-      </p>
-    </div>
+        <div class="cards-grid">
+          <article class="card">
+            <div class="icon-badge" style="background:rgba(0,245,212,0.14); color:var(--cyan);">&#10022;</div>
+            <h3>Bloom Chain Bursts</h3>
+            <p>Catch 3 sparks of the same color in a row to detonate a Bloom—clearing matching sparks across the arena for huge bonus points.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge" style="background:rgba(255,77,109,0.14); color:var(--rose);">&#9889;</div>
+            <h3>2&times; Fever Combos</h3>
+            <p>Stack an 8&times; combo streak to ignite Fever Mode, bathing the ring in crimson energy and doubling every point you score.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge" style="background:rgba(255,183,3,0.14); color:var(--gold);">&#9733;</div>
+            <h3>Power Sparks</h3>
+            <p>Catch <strong>Gold Rainbow</strong> wildcards to extend any chain, <strong>White Prism</strong> sparks to slow time, and <strong>Rush Diamonds</strong> for 2&times; score.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge" style="background:rgba(155,93,229,0.16); color:#c77dff;">&#9678;</div>
+            <h3>Tap or Swipe Controls</h3>
+            <p>Spin effortlessly with dedicated Left/Right buttons, stage taps, or horizontal swipes—paired with crisp iOS haptic feedback.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge" style="background:rgba(241,91,181,0.14); color:var(--pink);">&#9835;</div>
+            <h3>Synth-Glass Audio</h3>
+            <p>Original crystalline sound effects and adaptive ambient tones with independent Sound and Haptics toggles anytime.</p>
+          </article>
+
+          <article class="card">
+            <div class="icon-badge" style="background:rgba(112,224,0,0.14); color:var(--lime);">&#128274;</div>
+            <h3>Privacy-First &amp; Offline Ready</h3>
+            <p>No accounts, no sign-ups, and no cross-app tracking. High scores and best combos stay privately on your device.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tiers -->
+    <section id="tiers">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">Dynamic Progression</div>
+          <h2>6 Escalating Color Tiers</h2>
+          <p>Begin cleanly with 3 hues and master all 6 vibrant petals as the rhythm intensifies.</p>
+        </div>
+
+        <div class="tiers">
+          <div class="tier">
+            <div class="tier-dot" style="background:var(--cyan); box-shadow:0 0 14px var(--cyan);"></div>
+            <div class="tier-name">Dawn</div>
+            <div class="tier-meta">3 Hues</div>
+          </div>
+          <div class="tier">
+            <div class="tier-dot" style="background:var(--lime); box-shadow:0 0 14px var(--lime);"></div>
+            <div class="tier-name">Pulse</div>
+            <div class="tier-meta">4 Hues</div>
+          </div>
+          <div class="tier">
+            <div class="tier-dot" style="background:var(--violet); box-shadow:0 0 14px var(--violet);"></div>
+            <div class="tier-name">Prism</div>
+            <div class="tier-meta">5 Hues</div>
+          </div>
+          <div class="tier">
+            <div class="tier-dot" style="background:var(--pink); box-shadow:0 0 14px var(--pink);"></div>
+            <div class="tier-name">Bloom</div>
+            <div class="tier-meta">5 Hues+</div>
+          </div>
+          <div class="tier">
+            <div class="tier-dot" style="background:var(--gold); box-shadow:0 0 14px var(--gold);"></div>
+            <div class="tier-name">Nova</div>
+            <div class="tier-meta">6 Hues</div>
+          </div>
+          <div class="tier">
+            <div class="tier-dot" style="background:var(--rose); box-shadow:0 0 14px var(--rose);"></div>
+            <div class="tier-name">Zenith</div>
+            <div class="tier-meta">Master Tier</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section id="support">
+      <div class="wrap">
+        <div class="cta-banner">
+          <img src="assets/icon.png" alt="Prism Ring app icon" />
+          <h2>How Long Can You Keep the Glass Intact?</h2>
+          <p>Download Prism Ring on iPhone &amp; iPad and chase your Zenith score today. Need help or have feedback? Reach out anytime.</p>
+          <div class="cta-row" style="justify-content:center; margin-bottom:0;">
+            <a class="btn btn-primary" href="https://apps.apple.com/app/id6837953058" target="_blank" rel="noopener">
+              Get Prism Ring on iOS
+            </a>
+            <a class="btn btn-ghost" href="mailto:brianokdev@gmail.com?subject=Prism%20Ring%20Support">
+              Contact Support
+            </a>
+            <a class="btn btn-ghost" href="privacy.html">
+              Privacy Policy
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <div>&copy; 2026 Brian Kabonyo (brianoksoftware). All rights reserved.</div>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="privacy.html#support">Support</a>
+        <a href="mailto:brianokdev@gmail.com?subject=Prism%20Ring%20Support">brianokdev@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot preview">
+    <img id="lightbox-img" src="" alt="Full-size Prism Ring screenshot" />
+  </div>
+
+  <script>
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    document.querySelectorAll('.shot-card').forEach(card => {
+      card.addEventListener('click', () => {
+        lightboxImg.src = card.dataset.src;
+        lightbox.classList.add('open');
+      });
+    });
+    lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') lightbox.classList.remove('open');
+    });
+  </script>
 </body>
 </html>
